@@ -1,0 +1,17 @@
+version: '3.7'
+
+services:
+  jenkins:
+    build:
+      context: .
+      args:
+        HOST_DOCKER_GID: "998"
+    ports:
+      - 8083:8080
+      - 50000:50000
+    environment:
+      DOCKER_OPTS: "-H tcp://localhost:2375 -H unix:///var/run/docker.sock"
+    volumes:
+      - ./../data-persist/jenkins-data:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./../apps:/var/jenkins_home/repositories

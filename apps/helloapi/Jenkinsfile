@@ -1,0 +1,75 @@
+#!groovy​
+
+node {
+    def dockerImage = "localhost:5000/app/helloapi"
+
+    try {
+
+        stage("Checkout") {
+            checkout scm
+        }
+
+        stage("Build test environment") {
+            sh 'docker-compose build'
+            sh 'docker-compose run -T helloapi bash -c "go mod vendor"'
+        }
+
+        stage("Test") {
+            sh 'docker-compose run -T helloapi bash -c "go test ./..."'
+        }
+
+        if( env.BRANCH_NAME != "master" && env.BRANCH_NAME != "develop" ) {
+           currentBuild.result = 'SUCCESS'
+           return
+        }
+
+        stage("Push develop image") {
+            sh 'docker-compose -f docker-compose.yml -f docker-compose-release.yml build'
+            sh "docker tag helloapi \"$dockerImage:develop\""
+
+            docker.withRegistry( 'http://localhost:5000', "localRegistryCredential") {
+                sh "docker push $dockerImage:develop"
+            }
+        }
+
+        stage("K8s deploy in val") {
+            sh '''
+            cd ./kubernetes
+            bash ./deploy.sh validation
+            '''
+        }
+
+        if( env.BRANCH_NAME != "master" ) {
+           currentBuild.result = 'SUCCESS'
+           return
+        }
+
+        stage("Push image") {
+            def oldTag = readFile "./VERSION"
+            def (major, minor, patch) = oldTag.tokenize(".")
+            def newTag = "$major.$minor.${patch.toInteger() + 1}"
+
+            sh "docker tag helloapi \"$dockerImage:$newTag\""
+            sh "docker tag helloapi \"$dockerImage:latest\""
+
+            docker.withRegistry( 'http://localhost:5000', "localRegistryCredential") {
+                sh "docker push \"$dockerImage:$newTag\""
+                sh "docker push \"$dockerImage:latest\""
+            }
+        }
+
+        stage("K8s deploy in prod") {
+            sh '''
+            cd ./kubernetes
+            bash ./deploy.sh production
+            '''
+        }
+
+    } finally {
+        stage('Clean') {
+            sh '''
+            echo "@todo"
+            '''
+        }
+    }
+}

@@ -1,0 +1,13 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: helloapi-domain
+  namespace: helloapi
+spec:
+  rules:
+  - host: www.helloapi.lan
+    http:
+      paths:
+        - backend:
+            serviceName: helloapi-svc
+            servicePort: 32000

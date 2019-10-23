@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map-helloapi
+  namespace: helloapi
+data:
+  APP_ENV: "prod"

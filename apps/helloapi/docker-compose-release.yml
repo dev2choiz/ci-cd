@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  helloapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: helloapi_release
+    ports:
+      - 80:80

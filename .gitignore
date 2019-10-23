@@ -1,0 +1,8 @@
+.idea
+apps/helloapi/.git
+apps/helloapi/vendor
+apps/helloapi/main
+cluster/cert
+cluster/logs
+data-persist
+registry/auth/htpasswd

@@ -1,0 +1,29 @@
+version: '3.7'
+
+
+services:
+  registry:
+    image: registry:latest
+    restart: always
+    ports:
+      - 5000:5000
+    volumes:
+      - /var/ecosys/data-persist/registry-data:/var/lib/registry
+      - ./auth:/auth
+      - ./config.yml:/etc/docker/registry/config.yml
+    environment:
+      REGISTRY_AUTH: htpasswd
+      REGISTRY_AUTH_HTPASSWD_REALM: "Registry Realm"
+      REGISTRY_AUTH_HTPASSWD_PATH: /auth/htpasswd
+      REGISTRY_HTTP_SECRET: secret
+      REGISTRY_HTTP_ADDR:localhost:5000:
+
+  ui:
+    image: joxit/docker-registry-ui:static
+    ports:
+      - 5080:80
+    environment:
+      - REGISTRY_TITLE=Personal registry
+      - URL=http://localhost:5000
+    depends_on:
+      - registry
