@@ -10,4 +10,4 @@ spec:
       paths:
         - backend:
             serviceName: helloapi-svc
-            servicePort: 32000
+            servicePort: 31081

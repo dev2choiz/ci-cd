@@ -7,8 +7,10 @@ if [[ "$CONTEXT" == "" ]]; then
     exit 1
 fi
 
-OPTIONS=" --namespace=helloapi --context=${CONTEXT}"
+cd ./kubernetes
 
+#kubectl config use-context "$CONTEXT"
+OPTIONS=" --namespace=helloapi --context=${CONTEXT}"
 kubectl --context=${CONTEXT} apply -f "./namespace.json"
 kubectl $OPTIONS apply -f "./${CONTEXT}/config-map-helloapi.yaml"
 kubectl $OPTIONS apply -f "./${CONTEXT}/helloapi-deploy.yaml"

@@ -2,20 +2,51 @@
 
 node {
     def dockerImage = "localhost:5000/app/helloapi"
+    def reportDir = "./reports"
+    def juid = sh(script: "id -u", returnStdout: true).trim()
+    def jgid = sh(script: "id -g", returnStdout: true).trim()
+    def doc_opts = "HOST_UID=\"$juid\" HOST_GID=\"$jgid\""
 
     try {
-
         stage("Checkout") {
             checkout scm
         }
 
         stage("Build test environment") {
-            sh 'docker-compose build'
-            sh 'docker-compose run -T helloapi bash -c "go mod vendor"'
+            sh """
+            ${doc_opts} docker-compose build
+            """
+            sh """
+            ${doc_opts} docker-compose run -T helloapi bash -c "go mod vendor"
+            """
         }
 
         stage("Test") {
-            sh 'docker-compose run -T helloapi bash -c "go test ./..."'
+
+            sh """
+            ${doc_opts} docker-compose run -T helloapi bash -c "rm -rf ./reports"
+            """
+            sh """
+            ${doc_opts} docker-compose run -T helloapi bash -c "./scripts/test.sh"
+            """
+            sh """
+            ${doc_opts} docker-compose run -T helloapi bash -c "chmod -R 0755 ./"
+            """
+
+            cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: 'reports/cover.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+            junit 'reports/*.xml'
+
+            archiveArtifacts 'reports/*'
+
+            publishHTML([
+                allowMissing: false,
+                alwaysLinkToLastBuild: false,
+                keepAll: false,
+                reportDir: './reports',
+                reportFiles: 'cover.html',
+                reportName: 'HTML Report',
+                reportTitles: ''
+            ])
         }
 
         if( env.BRANCH_NAME != "master" && env.BRANCH_NAME != "develop" ) {
@@ -24,7 +55,7 @@ node {
         }
 
         stage("Push develop image") {
-            sh 'docker-compose -f docker-compose.yml -f docker-compose-release.yml build'
+            sh "${doc_opts} docker-compose -f docker-compose.yml -f docker-compose-release.yml build"
             sh "docker tag helloapi \"$dockerImage:develop\""
 
             docker.withRegistry( 'http://localhost:5000', "localRegistryCredential") {
@@ -34,8 +65,7 @@ node {
 
         stage("K8s deploy in val") {
             sh '''
-            cd ./kubernetes
-            bash ./deploy.sh validation
+            bash ./kubernetes/deploy.sh validation
             '''
         }
 
@@ -60,8 +90,7 @@ node {
 
         stage("K8s deploy in prod") {
             sh '''
-            cd ./kubernetes
-            bash ./deploy.sh production
+            bash ./kubernetes/deploy.sh production
             '''
         }
 

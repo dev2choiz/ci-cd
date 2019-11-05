@@ -3,6 +3,9 @@ version: '3.7'
 services:
   helloapi:
     build:
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
       context: .
       dockerfile: Dockerfile
       target: helloapi_dev

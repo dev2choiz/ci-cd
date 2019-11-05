@@ -19,12 +19,12 @@ contexts:
   name: kubernetes-admin@kubernetes
 - context:
     cluster: prod-cluster
-    namespace: app1
+    namespace: helloapi
     user: developer
   name: production
 - context:
     cluster: val-cluster
-    namespace: app1
+    namespace: helloapi
     user: developer
   name: validation
 current-context: kubernetes-admin@kubernetes

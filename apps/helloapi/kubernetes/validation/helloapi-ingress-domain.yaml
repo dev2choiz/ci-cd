@@ -5,9 +5,9 @@ metadata:
   namespace: helloapi
 spec:
   rules:
-  - host: www.helloapi.lan
+  - host: www.helloapi.val.lan
     http:
       paths:
         - backend:
             serviceName: helloapi-svc
-            servicePort: 32000
+            servicePort: 30080

@@ -33,5 +33,5 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 kubectl config set-cluster val-cluster  --server=https://192.168.0.23:6443  --certificate-authority=./cert/ca-file
 kubectl config set-cluster prod-cluster --server=https://192.168.0.23:6443  --certificate-authority=./cert/ca-file
 kubectl config set-credentials developer --client-certificate=./cert/cert-file --client-key=./cert/key-seefile
-kubectl config set-context validation --cluster=val-cluster  --namespace=app1 --user=developer
-kubectl config set-context production --cluster=prod-cluster --namespace=app1 --user=developer
+kubectl config set-context validation --cluster=val-cluster --user=developer
+kubectl config set-context production --cluster=prod-cluster --user=developer

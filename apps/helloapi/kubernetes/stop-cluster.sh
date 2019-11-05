@@ -7,6 +7,7 @@ if [[ "$CONTEXT" == "" ]]; then
     exit 1
 fi
 
+#kubectl config use-context "$CONTEXT"
 OPTIONS=" --namespace=helloapi --context=${CONTEXT}"
 kubectl delete $OPTIONS cm config-map-helloapi
 kubectl delete $OPTIONS ingress helloapi-domain
